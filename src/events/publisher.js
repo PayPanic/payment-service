@@ -1,5 +1,6 @@
-const { Kafka } = require('kafkajs');
-const kafka = new Kafka({ brokers: [process.env.KAFKA_BROKER] });
+const { createKafkaInstance } = require('infra-lib/kafka/client');
+
+const kafka = createKafkaInstance('payment-service');
 const producer = kafka.producer();
 
 (async () => await producer.connect())();

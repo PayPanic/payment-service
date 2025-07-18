@@ -1,39 +1,24 @@
-version: '3.8'
+version: '3.9'
+
 services:
   payment-service:
     build: .
+    container_name: payment-service
     ports:
-      - '4000:4000'
-    depends_on:
-      - postgres
-      - kafka
+      - "5005:4000"
+      - "9229:9229"
     environment:
-      - DB_HOST=postgres
-      - DB_USER=postgres
-      - DB_PASS=postgres
-      - DB_NAME=payments
-      - KAFKA_BROKER=kafka:9092
+      PORT: 4000
+      DB_HOST: shared-postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: main
+      KAFKA_BROKER: kafka:9092
+    networks:
+      - shared-infra
+    entrypoint: [ "/bin/sh", "-c", "sleep 10 && node --inspect=0.0.0.0:9229 src/app.js" ]
 
-  postgres:
-    image: postgres:14
-    environment:
-      POSTGRES_DB: payments
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    ports:
-      - '5432:5432'
-
-  zookeeper:
-    image: bitnami/zookeeper:latest
-    ports:
-      - '2181:2181'
-
-  kafka:
-    image: bitnami/kafka:latest
-    ports:
-      - '9092:9092'
-    environment:
-      KAFKA_CFG_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
-    depends_on:
-      - zookeeper
+networks:
+  shared-infra:
+    external: true
